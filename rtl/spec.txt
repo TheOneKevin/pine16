@@ -1,0 +1,40 @@
+=== OPCODE ENCODING ===
+Can be 1, 2, 3 or 4 bytes long
+oooo_ootu sssd_ddvb iiii_iiii iiii_iiii
+
++= LEGEND =+
+o opcode (64 * u = 128 effective instructions)
+u load next byte
+v load next byte
+t addressing mode
+b byte/word operation
+i immediate value
++==========+
+
+Notes:
+if v & b then load next 2 bytes
+if u | t then load next byte
+if t     then mode = memory
+
+Addressing Modes:
+uvt mnemonic
+100 rd
+110 imm8/16
+001 [rd]
+011 [imm16]
+111 [rd+imm8]
+
+These extra modes:
+000 = invalid
+010 = invalid
+101 = 001
+
+{signal: [
+  { name: "CLK",		wave: "hlhlhlhlhlh" },
+  { name: "ALE0",		wave: "xh.l......x" },
+  { name: "ALE1",		wave: "xl.h.l....." },
+  { name: "WE#",		wave: "h.....l.h.." },
+  { name: "OE#",		wave: "h.....l..h." },
+  { name: "BHE#",		wave: "x.h.......x" },
+  { name: "IO[0:15]",	wave: "x.9.9.x.5.x", data:[ "A[15:0]", "A[31:16]", "Dout[0:15]" ] },
+]}
