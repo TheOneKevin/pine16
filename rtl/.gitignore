@@ -1,5 +1,8 @@
 build/
-.dblite
-.bin
-.asc
-.json
+
+*.dblite
+*.bin
+*.asc
+*.json
+
+log.txt
