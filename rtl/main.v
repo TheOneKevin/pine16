@@ -1,6 +1,6 @@
-`include "cpu/IO.v"
-`include "cpu/DECODER.v"
-`include "uart/UART.v"
+`include "cpu/io.v"
+`include "cpu/prefetch.v"
+`include "uart/uart.v"
 
 `define IO_PINS { \
     PIN_1, PIN_2,  PIN_3,  PIN_4,  PIN_5,  PIN_6,  PIN_7,  PIN_8, \
@@ -69,7 +69,7 @@ module CPU (
         .pio(pio), .isout(isout)
     );
 
-    DECODER decoder(
+    PREFETCH prefetch(
         // Module Signals
         .clk(CLK),
         // Instruction Queue

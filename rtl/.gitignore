@@ -1,8 +1,0 @@
-build/
-
-*.dblite
-*.bin
-*.asc
-*.json
-
-log.txt

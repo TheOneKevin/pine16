@@ -1,15 +1,15 @@
-`include "cpu/DECODER.v"
+`include "cpu/prefetch.v"
 `timescale 1ns / 1ns
 `define CASE1
 
-module DECODER_tb();
+module PREFETCH_tb();
     parameter PERIOD = 2;
     parameter PERIOD3 = PERIOD * 3;
     reg clk = 0;
     always #(PERIOD/2) clk=~clk;
     initial begin
-        $dumpfile("DECODER.vcd");
-        $dumpvars(0, decoder);
+        $dumpfile("PREFETCH.vcd");
+        $dumpvars(0, prefetch);
     end
 
     wire  req;
@@ -66,7 +66,7 @@ module DECODER_tb();
     end
 `endif
 
-    DECODER decoder(
+    PREFETCH prefetch(
         .clk(clk),
         .req(req), .ack(ack), .dtr(dtr), .adr(adr),
         .reqi(reqi), .acki(acki), .instr(instr),
