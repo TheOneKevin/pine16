@@ -37,22 +37,23 @@ uvt mnemonic
 
 == BLOCK 0000_xx_1x to 1011_xx_1x ==
 
-MOV  0000_sd_1t sssd_ddvb (imm) * Note: MOV as memory load operation
-ADD  0001_sd_1t sssd_ddvb (imm)
-SUB  0010_sd_1t sssd_ddvb (imm)
-MUL  0011_sd_1t sssd_ddvb (imm)
-AND  0100_sd_1t sssd_ddvb (imm)
-OR   0101_sd_1t sssd_ddvb (imm)
-XOR  0110_sd_1t sssd_ddvb (imm)
-SHL  0111_sd_1t sssd_ddvb (imm)
-SHR  1000_sd_1t sssd_ddvb (imm)
-ROL  1001_sd_1t sssd_ddvb (imm)
-ROR  1010_sd_1t sssd_ddvb (imm)
-CMP  1011_sd_1t sssd_ddvb (imm)
+MOV  0000_sd_ut sssd_ddvb (imm) * Note: MOV as memory load operation
+ADD  0001_sd_ut sssd_ddvb (imm)
+SUB  0010_sd_ut sssd_ddvb (imm)
+MUL  0011_sd_ut sssd_ddvb (imm)
+AND  0100_sd_ut sssd_ddvb (imm)
+OR   0101_sd_ut sssd_ddvb (imm)
+XOR  0110_sd_ut sssd_ddvb (imm)
+SHL  0111_sd_ut sssd_ddvb (imm)
+SHR  1000_sd_ut sssd_ddvb (imm)
+ROL  1001_sd_ut sssd_ddvb (imm)
+ROR  1010_sd_ut sssd_ddvb (imm)
+CMP  1011_sd_ut sssd_ddvb (imm)
 
 == BLOCK 1100_0x_1x (special) ==
 
 MOV  1100_0d_1s sssd_ddvb (imm) * Note: MOV as memory store operation
+TEST 1100_1d_1s sssd_ddvb (imm) * Note: TEST only r/r or r/imm
 
 == BLOCK 1101_00_00 to 1101_10_00 ==
 
@@ -70,23 +71,20 @@ INB  1110_00_10 00dd_dd10 imm8
 OUTB 1110_00_10 01dd_dd10 imm8
 INW  1110_00_10 10dd_dd10 imm8
 OUTW 1110_00_10 11dd_dd10 imm8
-
-== BLOCK 1110_01_11 xxxx_xx0b ==
-
-NOT  1110_01_11 00dd_dd0b
+NOT  1110_01_10 00dd_dd0b
 
 == BLOCK 1110_10_00 and 1110_11_00 ==
 
 CLI  1110_10_00
 STI  1110_11_00
 
-== BLOCK 1111_00_1x ==
+== BLOCK 1111_0x_1x ==
 
-JMP  1111_00_1t 000d_ddv0 (imm)
-JE   1111_00_1t 001d_ddv0 (imm)
-JNE  1111_00_1t 010d_ddv0 (imm)
-JG   1111_00_1t 011d_ddv0 (imm)
-JL   1111_00_1t 100d_ddv0 (imm)
-JGE  1111_00_1t 101d_ddv0 (imm)
-JLE  1111_00_1t 110d_ddv0 (imm)
-CALL 1111_00_1t 111d_ddv0 (imm)
+JZ   1111_00_1t 00dd_ddvb (imm)
+JNZ  1111_00_1t 01dd_ddvb (imm)
+JG   1111_00_1t 10dd_ddvb (imm)
+JL   1111_00_1t 11dd_ddvb (imm)
+JGE  1111_01_1t 00dd_ddvb (imm)
+JLE  1111_01_1t 01dd_ddvb (imm)
+CALL 1111_10_1t 00dd_ddvb (imm)
+JMP  1111_10_1t 01dd_ddvb (imm)

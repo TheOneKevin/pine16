@@ -1,24 +1,30 @@
 module REGFILE(
-    input clock,
+    input clk,
     input reset,
-    input [2:0] addr,
-    input write_enable,
-    input [7:0] din,
-    output [7:0] dout
+    // Write
+    input we_p,
+    input [addr_width-1:0] wadr_p,
+    input [data_width-1:0] din,
+    // Read
+    input [addr_width-1:0] radr_n,
+    output reg [data_width-1:0] dout
 );
-    reg[7:0] regs[7:0];
+    parameter addr_width = 4;
+    parameter data_width = 16;
+
+    reg[data_width-1:0] regs[(1<<addr_width)-1:0];
+
     integer i;
-    always@(posedge reset) begin
-        for(i = 0; i < 8; i++)
+    initial begin
+        for(i = 0; i < (1<<addr_width); i++)
             regs[i] = 0;
-        out <= regs[0];
     end
-    always@(posedge clock) if(write_enable) begin
-        regs[addr] <= din;
+    
+    always @(negedge clk) begin
+        if(we_p)
+            regs[wadr_p] = din;
     end
-    always@(negedge clock) if(!write_enable) begin
-        out <= regs[addr];
+    always @(posedge clk) begin
+        dout = regs[radr_n];
     end
-    reg[7:0] out;
-    assign dout = out;
 endmodule

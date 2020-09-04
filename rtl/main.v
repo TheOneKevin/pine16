@@ -1,6 +1,7 @@
 `include "cpu/io.v"
 `include "cpu/prefetch.v"
-`include "uart/uart.v"
+`include "cpu/decoder.v"
+//`include "uart/uart.v"
 
 `define IO_PINS { \
     PIN_1, PIN_2,  PIN_3,  PIN_4,  PIN_5,  PIN_6,  PIN_7,  PIN_8, \
@@ -35,50 +36,62 @@ module CPU (
     assign din = `IO_PINS;
     assign { PIN_17, PIN_18, PIN_19, PIN_20 } = adr_hi;
     assign PIN_21 = pio;
-    assign PIN_22 = !oe & !oe_neg;
+    assign PIN_22 = !(oe & oe_neg);
     assign PIN_23 = ale_neg;
     assign PIN_24 = !we;
-
-    // Decode Signals
-    reg rw0 = 1;
-    wire req0, ack0;
-    wire[15:0] dtr0;
-    wire [19:0] adr0;
     
-    // XU Signals
-    reg req1 = 0; wire ack1; reg rw1 = 0;
-    reg [15:0] dtw1 = 0;
-    wire[15:0] dtr1;
-    reg [19:0] adr1 = 0;
+    // Prefetch-Memory Signals
+    wire rqm_pq, akm_pq;
+    wire[15:0] drm_pq;
+    wire[19:0] adm_pq;
+
+    // Decode-Prefetch Signals
+    wire rqi_dc, aki_dc;
+    wire[31:0] instr_dc;
+
+    // Execute-Memory Signals
+    reg rwm_xu;
+    wire rqm_xu, akm_xu;
+    wire[15:0] drm_xu, dwm_xu;
+    wire [19:0] adm_xu;
+
+    // Reg reset
+    reg reset = 0;
 
     // I/O Pin Arbitrator
     IO_SYNC mem(
-        // Module Signals
         .clk(CLK),
         // Instruction Queue
-        .req0(req0), .ack0(ack0),
-        .rw0(rw0), /*.dtw0(dtw0),*/
-        .dtr0(dtr0), .adr0(adr0),
-        // Execution Engine
-        .req1(req1), .ack1(ack1),
-        .rw1(rw1), .dtw1(dtw1),
-        .dtr1(dtr1), .adr1(adr1),
-        // External IO
+        .req0(rqm_pq), .ack0(akm_pq), .rw0(1'b0),
+        .adr0(adm_pq), .dtr0(drm_pq), .dtw0(16'b0),
+        // Execute
+        /*.req1(rqm_xu), .ack1(akm_xu),
+        .rw1(rwm_xu), .dtw1(dwm_xu),
+        .dtr1(drm_xu), .adr1(adm_xu),*/
+        // External IO (physical pins)
         .din(din), .dout(dout), .adr_hi(adr_hi),
         .oe(oe), .oe_neg(oe_neg), .we(we), .ale_neg(ale_neg),
         .pio(pio), .isout(isout)
     );
 
     PREFETCH prefetch(
-        // Module Signals
         .clk(CLK),
-        // Instruction Queue
-        .req(req0), .ack(ack0), .dtr(dtr0), .adr(adr0)
-        // XU Interface
+        // Memory
+        .req(rqm_pq), .ack(akm_pq), .dtr(drm_pq), .adr(adm_pq),
+        // Decoder Interface
+        .reqi(rqi_dc), .acki(aki_dc), .instr(instr_dc),
+        // Flush/Reset
+        .sigflush(reset), .fadr(21'b0)
+    );
+
+    DECODER decoder(
+        .clk(CLK),
+        // PQ Interface
+        .rqi_p(rqi_dc), .aki_n(aki_dc), .cmd_n(instr_dc)
     );
 
     // UART communication
-    assign LED = !PIN_25;
+    /*assign LED = !PIN_25;
 	wire rdy;
 	wire rxn;
     reg  txn = 0;
@@ -96,13 +109,20 @@ module CPU (
 		.data_in(PIN_25),
 		.data_out(rx_data),
 		.new_data(rxn)
-	);
+	);*/
 
     // FSM
     reg[3:0] state = 0;
-    always @(posedge CLK) begin
-        
-    end
+    always @(posedge CLK) case(state)
+        4'b0000: begin
+            reset <= 1;
+            state <= 4'b0001;
+        end
+        4'b0001: begin
+            reset <= 0;
+            state <= 4'b0010;
+        end
+    endcase
 
     always @(negedge CLK) begin
         

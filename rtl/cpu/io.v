@@ -29,6 +29,7 @@ module IO_SYNC(
 );
     // Configure data and signals
     reg st, ack;
+    reg[15:0] latched_din;
     wire[15:0] data_write;
     assign dtr0 = din;
     assign dtr1 = din;
@@ -84,7 +85,9 @@ module IO_SYNC(
             ale_neg <= 0;
             oe_neg <= 1;
         end
-        3'b010: ack <= 1;
+        3'b010: begin 
+            ack <= 1;
+        end
         3'b101: begin
             ale_neg <= 0;
             oe_neg <= 1;

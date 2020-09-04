@@ -14,7 +14,7 @@ module PREFETCH(
     input   wire clk,
 
     // IO Synchronization Interface
-    output  reg  req = 1,
+    output  reg  req,
     input   wire ack,
     input   wire[15:0] dtr,
     output  reg [19:0] adr,
@@ -37,14 +37,12 @@ module PREFETCH(
     reg [(BW-1):0] fmm2[0:(1<<LG)-1];
     reg [(BW-1):0] fmm3[0:(1<<LG)-1];
     reg [LG:0] wp = 0, rp = 0, fill;
-    reg full, empty;
+    reg full;
 
     always @(*)
         fill = wp - rp;
     always @(*)
         full = fill == { 1'b1, {(LG) {1'b0}} };
-    always @(*)
-        empty = fill == 0;
     always @(*)
         instr = {
             fmm0[rp[LG-1:0]], 
@@ -53,9 +51,9 @@ module PREFETCH(
             fmm3[rp[LG-1:0]]
         };
     
-    always @(posedge clk) begin
-        acki <= reqi && !empty && !sigflush;
-        if(reqi && !empty && !sigflush) begin    
+    always @(negedge clk) begin
+        acki <= reqi && fill > 1 && !sigflush;
+        if(reqi && fill > 1 && !sigflush) begin    
             rp <= rp + 1;
         end else if(sigflush) begin
             rp <= 0;
@@ -75,8 +73,8 @@ module PREFETCH(
     // Decode logic
     wire u, t;
     reg szw;
-    assign u = cur[6];
-    assign t = cur[7];
+    assign u = cur[1];
+    assign t = cur[0];
     integer i; // For reset
     always @(negedge clk) begin if(flush) begin
         wp <= 0;
@@ -91,6 +89,9 @@ module PREFETCH(
         2'b00: begin
             wp = wp + 1'b1;
             fmm0[wp[LG-1:0]] <= cur; // Store sync'd to rp
+            fmm1[wp[LG-1:0]] <= 0;   // Reset everything to 0
+            fmm2[wp[LG-1:0]] <= 0;
+            fmm3[wp[LG-1:0]] <= 0;
             fsm1_next <= { 1'b0, u || t };
         end
         2'b01: begin
@@ -124,6 +125,8 @@ module PREFETCH(
         if(req) begin
             req <= 0;
             ignoreAck <= 1;
+        end else begin
+            ignoreAck <= 0;
         end
     end else case(fsm2)         // If not resetting...
     2'b00: begin                // Start first case
@@ -134,6 +137,7 @@ module PREFETCH(
         req <= fill < ((1 << LG)-2);
         if(ack && !ignoreAck && fill < ((1 << LG)-2)) begin
             fsm2 <= fsm2_next;
+            adr  <= adr + 1;
         end else if(ack && ignoreAck) begin
             ignoreAck <= 0;
         end
@@ -143,7 +147,7 @@ module PREFETCH(
     end
     2'b01: begin                // Lo byte (active cycle)
         active  <= !full;
-        cur     <= dtr[7:0];
+        cur     <= data_r[7:0];
         fsm1    <= fsm1_next;
         fsm2    <= 2'b11;
     end
@@ -152,7 +156,6 @@ module PREFETCH(
         cur     <= data_r[15:8];
         fsm2_next <= 2'b01;     // Reset the next FSM2 state
         fsm1    <= fsm1_next;
-        adr     <= adr + 1;
         fsm2    <= 2'b00;
     end endcase; end
 endmodule

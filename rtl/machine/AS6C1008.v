@@ -5,8 +5,9 @@ module AS6C1008(
 );
     parameter TWC = 55;
     parameter TWHZ = 20;
+    parameter init = "";
 
-    reg[7:0] mem[0:1024-1]; // 128K x 8
+    reg[7:0] mem[1024-1:0]; // 128K x 8
     reg[7:0] out;
 
     always @(*) begin
@@ -18,6 +19,10 @@ module AS6C1008(
             #TWC
             out = mem[A];
         end
+    end
+
+    initial begin
+        $readmemh(init, mem);
     end
 
     assign #(0, 0, TWHZ) DQ = (!CE && CE2 && !OE && WE) ? out : 8'bz;
