@@ -1,47 +1,53 @@
 Microcode encoding:
 twrr_aooo_owwx_0000 (4-bit padding)
-t = 1 for RAW, 0 for custom
+t = 0 for RAW, 1 for custom
 w = 1 for no write
-a = 0 for AOP, 1 for immediate
+a = 0 for op, 1 for immediate
 x = 1 for END
-r = imm, MDR, s, d
-w = MAR, MDR, s, d
+r = imm, mdr, s, d
+w = mar, mdr, s, d
 
 ==>> BANK 0, op = mask 1111_0000 0000_0000
 
 uvt = 100
-R rs, AOP, W rd > END
+RAW rs, op, rd !> END
 
-0010_0000_0111
+1110_0000_0111_0000
+
+RAW rd, latch,
+RAW rs, op, rd !> END
+
+1011_1110_0000_0000
+1110_0000_0111_0000
 
 uvt = 110
-R imm, AOP, W rd > END
+RAW imm, op, rd > END
 
 0000_0000_0111
 
 uvt = 001
-R rs, A mov, W MAR
+RAW rs, mov, mar
 REQSYNC
-R MDR, AOP, W rd > END
+RAW mdr, op, rd > END
 
 0010_1000_0001
 1000_0000_0001
 0001_0000_0111
 
 uvt = 011
-R imm, A mov, W MAR
+RAW imm, mov, mar
 REQSYNC
-R MDR, AOP, W rd > END
+RAW mdr, op, rd > END
 
 0000_1000_0001
 1000_0000_0001
 0001_0000_0111
 
 uvt = 111
-R rs, A latch,
-R imm, A add, W MAR
+RAW rs, latch,
+RAW imm, add, mar
 REQSYNC
-R MDR, AOP, W rd > END
+RAW mdr, op, rd > END
 
 0110_1110_0001
 0000_1000_1001

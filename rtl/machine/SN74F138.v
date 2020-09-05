@@ -21,6 +21,7 @@ module SN74F138(
     assign #TPLH Y = G2A || G2B || !G1 ? 8'b1111_1111 : out;
 endmodule
 
+`ifndef tb
 module SN74F138_tb();
     wire [7:0] out;
     reg A, B, C, G2A, G2B, G1;
@@ -49,3 +50,4 @@ module SN74F138_tb();
 
     SN74F138 u1(A, B, C, G2A, G2B, G1, out);
 endmodule
+`endif

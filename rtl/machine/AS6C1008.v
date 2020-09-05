@@ -28,6 +28,7 @@ module AS6C1008(
     assign #(0, 0, TWHZ) DQ = (!CE && CE2 && !OE && WE) ? out : 8'bz;
 endmodule
 
+`ifndef tb
 module AS6C1008_tb();
     reg [16:0] A;
     reg [7:0] inp;
@@ -72,3 +73,4 @@ module AS6C1008_tb();
 
     AS6C1008 u1(A, DQ, ce, ce2, we, oe);
 endmodule
+`endif

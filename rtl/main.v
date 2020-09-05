@@ -1,6 +1,7 @@
 `include "cpu/io.v"
 `include "cpu/prefetch.v"
 `include "cpu/decoder.v"
+`include "cpu/execute.v"
 //`include "uart/uart.v"
 
 `define IO_PINS { \
@@ -50,10 +51,14 @@ module CPU (
     wire[31:0] instr_dc;
 
     // Execute-Memory Signals
-    reg rwm_xu;
-    wire rqm_xu, akm_xu;
+    wire rqm_xu, akm_xu, rwm_xu;
     wire[15:0] drm_xu, dwm_xu;
     wire [19:0] adm_xu;
+
+    // Execute-Decode Signals
+    wire akx_dc, rqx_dc;
+    wire [15:0] uop_dc, opimm;
+    wire [3:0] regsrc, regdst, aluop;
 
     // Reg reset
     reg reset = 0;
@@ -65,9 +70,9 @@ module CPU (
         .req0(rqm_pq), .ack0(akm_pq), .rw0(1'b0),
         .adr0(adm_pq), .dtr0(drm_pq), .dtw0(16'b0),
         // Execute
-        /*.req1(rqm_xu), .ack1(akm_xu),
+        .req1(rqm_xu), .ack1(akm_xu),
         .rw1(rwm_xu), .dtw1(dwm_xu),
-        .dtr1(drm_xu), .adr1(adm_xu),*/
+        .dtr1(drm_xu), .adr1(adm_xu),
         // External IO (physical pins)
         .din(din), .dout(dout), .adr_hi(adr_hi),
         .oe(oe), .oe_neg(oe_neg), .we(we), .ale_neg(ale_neg),
@@ -79,7 +84,7 @@ module CPU (
         // Memory
         .req(rqm_pq), .ack(akm_pq), .dtr(drm_pq), .adr(adm_pq),
         // Decoder Interface
-        .reqi(rqi_dc), .acki(aki_dc), .instr(instr_dc),
+        .rqi_p(rqi_dc), .aki_n(aki_dc), .instr(instr_dc),
         // Flush/Reset
         .sigflush(reset), .fadr(21'b0)
     );
@@ -87,7 +92,23 @@ module CPU (
     DECODER decoder(
         .clk(CLK),
         // PQ Interface
-        .rqi_p(rqi_dc), .aki_n(aki_dc), .cmd_n(instr_dc)
+        .rqi_p(rqi_dc), .aki_n(aki_dc), .cmd(instr_dc),
+        // XU Interface
+        .akx_n(akx_dc), .rqx_p(rqx_dc), .opout_p(uop_dc),
+        .regsrc(regsrc), .regdst(regdst), .aluop(aluop),
+        .opimm(opimm)
+    );
+
+    EXECUTE execute(
+        .clk(CLK),
+        // XU Interface
+        .akx_n(akx_dc), .rqx_p(rqx_dc), .opout_p(uop_dc),
+        .regsrc(regsrc), .regdst(regdst), .aluop(aluop),
+        .opimm(opimm),
+        // Memory
+        .rqm_n(rqm_xu), .rwm_n(rwm_xu),
+        .akm_n(akm_xu), .drm_n(drm_xu),
+        .dwm_n(dwm_xu), .adm_n(adm_xu)
     );
 
     // UART communication
@@ -118,9 +139,10 @@ module CPU (
             reset <= 1;
             state <= 4'b0001;
         end
-        4'b0001: begin
+        4'b0001: state <= 4'b0010;
+        4'b0010: begin
             reset <= 0;
-            state <= 4'b0010;
+            state <= 4'b0011;
         end
     endcase
 

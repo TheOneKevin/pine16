@@ -1,0 +1,110 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Sat Sep 05 18:25:21 2020
+[*]
+[dumpfile] "c:\Users\Kevin\Desktop\Projects\FPGA\pine16\rtl\build\dump.vcd"
+[dumpfile_mtime] "Sat Sep 05 18:24:54 2020"
+[dumpfile_size] 20565
+[savefile] "C:\Users\Kevin\Desktop\Projects\FPGA\pine16\rtl\machine\machine_testbench.gtkw"
+[timestart] 497
+[size] 1536 801
+[pos] -1 -1
+*-8.193395 1333 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb.
+[treeopen] tb.u0.
+[treeopen] tb.u0.decoder.
+[treeopen] tb.u0.execute.
+[sst_width] 238
+[signals_width] 251
+[sst_expanded] 1
+[sst_vpaned_height] 473
+@28
+tb.u0.CLK
+@200
+-Prefetch
+@28
+tb.u0.prefetch.fsm1[1:0]
+tb.u0.prefetch.fsm1_next[1:0]
+tb.u0.prefetch.fsm2[1:0]
+@22
+[color] 3
+tb.u0.prefetch.adr[19:0]
+@28
+tb.u0.prefetch.active
+tb.u0.prefetch.ack
+tb.u0.prefetch.req
+tb.u0.prefetch.sigflush
+tb.u0.prefetch.ignoreAck
+@22
+tb.u0.prefetch.dtr[15:0]
+tb.u0.prefetch.data_r[15:0]
+tb.u0.prefetch.cur[7:0]
+tb.u0.prefetch.wp[3:0]
+tb.u0.prefetch.rp[3:0]
+tb.u0.prefetch.fill[3:0]
+@28
+tb.u0.prefetch.u
+tb.u0.prefetch.t
+@200
+-
+-Decoder
+@28
+tb.u0.decoder.clk
+@22
+tb.u0.decoder.fsm1[3:0]
+@28
+tb.u0.decoder.aki_n
+tb.u0.decoder.rqi_p
+@22
+tb.u0.decoder.uop[15:0]
+tb.u0.decoder.jmp_address[7:0]
+tb.u0.decoder.instr[31:0]
+tb.u0.decoder.opcode[7:0]
+@200
+-
+-Execute
+@22
+tb.u0.execute.fsm1[3:0]
+@28
+tb.u0.execute.rqx_p
+tb.u0.execute.akx_n
+@200
+-Regfile
+@28
+tb.u0.execute.regs.we_p
+@22
+tb.u0.execute.uop[15:0]
+tb.u0.execute.regs.\regs[0][15:0]
+tb.u0.execute.regs.\regs[1][15:0]
+@200
+-ALU
+@22
+tb.u0.execute.alu0.a[15:0]
+tb.u0.execute.alu0.op[3:0]
+tb.u0.execute.alu0.r[15:0]
+@23
+tb.u0.execute.alu0.b[15:0]
+@200
+-
+-IO SYNC
+@28
+tb.u0.mem.state[2:0]
+tb.u0.mem.ack0
+@22
+tb.u0.mem.dtr0[15:0]
+@28
+tb.u0.mem.oe
+tb.u0.mem.oe_neg
+@200
+-
+-Physical Pins
+@28
+tb.u0.PIN_22
+@22
+tb.u7.DQ[7:0]
+tb.u7.out[7:0]
+tb.u0.mem.din[15:0]
+tb.u7.A[16:0]
+tb.u8.A[16:0]
+[pattern_trace] 1
+[pattern_trace] 0

@@ -1,10 +1,11 @@
+`define tb
+`timescale 1ns/1ns
+
 `include "machine/CY74FCT573.v"
 `include "machine/SN74F138.v"
 `include "machine/SN74LVC245.v"
 `include "machine/AS6C1008.v"
 `include "main.v"
-
-`timescale 1ns/1ns
 
 module tb();
     parameter PERIOD = 62;

@@ -20,8 +20,8 @@ module PREFETCH(
     output  reg [19:0] adr,
 
     // XU Interface
-    input   wire reqi,
-    output  reg  acki,
+    input   wire rqi_p,
+    output  reg  aki_n,
     output  reg [31:0] instr,
 
     // Flush
@@ -52,8 +52,8 @@ module PREFETCH(
         };
     
     always @(negedge clk) begin
-        acki <= reqi && fill > 1 && !sigflush;
-        if(reqi && fill > 1 && !sigflush) begin    
+        aki_n <= rqi_p && fill > 1 && !sigflush;
+        if(rqi_p && fill > 1 && !sigflush) begin
             rp <= rp + 1;
         end else if(sigflush) begin
             rp <= 0;

@@ -1,20 +1,21 @@
-=== OPCODE ENCODING ===
-Can be 1, 2, 3 or 4 bytes long
-oooo_ootu sssd_ddvb iiii_iiii iiii_iiii
-
 += LEGEND =+
 o opcode (64 * u = 128 effective instructions)
 u load next byte
-v load next byte
-t addressing mode
+v load next bytes
+t extra flag
 b byte/word operation
 i immediate value
 +==========+
+
++=== GENERAL OPCODE ENCODING ===+
+Can be 1, 2, 3 or 4 bytes long
+oooo_??tu ????_??vb iiii_iiii iiii_iiii
 
 Notes:
 if v & b then load next 2 bytes
 if u | t then load next byte
 if t     then mode = memory
+v, b, u and t are what determines the instruction length.
 
 Addressing Modes:
 uvt mnemonic
@@ -25,7 +26,7 @@ uvt mnemonic
 111 rs <- [rd+imm16]
 000 invalid
 010 impossible
-101 Same as 001
+101 same as 001
 
 Reverse Modes (store):
 uvt mnemonic
@@ -34,6 +35,9 @@ uvt mnemonic
 111 [rs+imm16] <- rd
 
 +==== INSTRUCTION SET ====+
+
+To see s, d, u, t, v, b refer to the
+legend above.
 
 == BLOCK 0000_xx_1x to 1011_xx_1x ==
 

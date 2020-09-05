@@ -16,6 +16,7 @@ module SN74LVC245(
     end
 endmodule
 
+`ifndef tb
 module SN74LVC245_tb();
     reg [7:0] inp;
     reg dir, oe;
@@ -52,3 +53,4 @@ module SN74LVC245_tb();
 
     SN74LVC245 u1(dir, oe, A, B);
 endmodule
+`endif

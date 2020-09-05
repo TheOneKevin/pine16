@@ -13,6 +13,7 @@ module CY74FCT573(
     assign #TPLH O = OE ? 8'bz : out; // TPLH = 8.5ns for LE to O
 endmodule
 
+`ifndef tb
 module CY74FCT573_tb();
     reg [7:0] inp;
     wire [7:0] out;
@@ -43,3 +44,4 @@ module CY74FCT573_tb();
 
     CY74FCT573 u1(oe, le, inp, out);
 endmodule
+`endif
