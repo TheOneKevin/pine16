@@ -1,4 +1,4 @@
-SRCS = utils.c gen/parser.c gen/lexer.c
+SRCS = main.c utils.c gen/parser.c gen/lexer.c
 CC = gcc
 FLAGS = -Os -lfl -I.
 

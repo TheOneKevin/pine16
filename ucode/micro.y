@@ -1,6 +1,7 @@
 %{
     #include <stdio.h>
     #include <stdlib.h>
+    #include <assert.h>
     #include "utils.h"
 
     #define YYERROR_VERBOSE 1
@@ -23,7 +24,6 @@
     int num;
     range_t* range;
     arg_t* args;
-    ins_t* inst;
     suffix_t* flags;
 }
 
@@ -41,8 +41,6 @@
 
 %type <range> jtab_range
 %type <args> args;
-%type <inst> statement;
-// %type <inst> body;
 %type <flags> suffix;
 
 // This means that I really don't know what I'm doing
@@ -50,9 +48,22 @@
 %left TOKEN_NL      // ((statement) \n statement) \n statement
 %right TOKEN_IDENT  // (ident) ? ((ident) ? ident)
 
-%start micro
+%start program
 
 %%
+
+program: micro {
+    symbol_t* symtab = dyncast(symbol_t, g(symtab));
+    for(int i = 0; i < dynsize(g(symtab)); i++) {
+        assert(symtab[i].jmp || symtab[i].sym);
+        if(!symtab[i].sym && symtab[i].jmp) {
+            printf("Error: Label \"%s\" referenced in jump not found.\n", symtab[i].name);
+            YYABORT;
+        } else if(symtab[i].sym && !symtab[i].jmp) {
+            printf("Warning: Unpaired label \"%s\".\n", symtab[i].name);
+        }
+    }
+}
 
 micro: %empty
     | micro jtab
@@ -74,10 +85,11 @@ label: TOKEN_LABEL[id]
     }
     ;
 
-jtab:
-    TOKEN_IDENT[id] TOKEN_AT jtab_range[u] jtab_range[v] TOKEN_NL
+jtab: TOKEN_IDENT[id] TOKEN_AT jtab_range[u] jtab_range[v] TOKEN_NL
     {
-        free($u), free($v);
+        if(set_jumptable($id, $u, $v) < 0) {
+            YYABORT;
+        }
     }
     ;
 
@@ -89,7 +101,7 @@ jtab_range:
 statement:
     TOKEN_IDENT[id] args suffix TOKEN_NL
     {
-        if(emit_instruction($id, $args, &$$) < 0) {
+        if(emit_instruction($id, $args, $suffix) < 0) {
             YYABORT; // TODO: Yikes, a memory leak probably will happen
         }
         free($suffix), free($id);
@@ -97,7 +109,7 @@ statement:
     }
     | TOKEN_IDENT[id] suffix TOKEN_NL
     {
-        if(emit_instruction($id, NULL, &$$) < 0) {
+        if(emit_instruction($id, NULL, $suffix) < 0) {
             YYABORT;
         }
         free($suffix), free($id);
@@ -124,21 +136,3 @@ suffix:
     ;
 
 %%
-
-int main(int argc, char** argv)
-{
-    ++argv, --argc;
-	if ( argc > 0 ) {
-        yyin = fopen( argv[0], "r" );
-    } else {
-        printf("No input file specified.\n");
-        return 0;
-    }
-    init_global();
-    if(yyparse() == 0) {
-        printf("Compilation successful.\n");
-    } else {
-        printf("Compilation failed with errors.\n");
-    }
-    destroy_global();
-}

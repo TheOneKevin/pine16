@@ -1,7 +1,7 @@
 Microcode encoding:
-twrr_aooo_owwx_0000 (4-bit padding)
+twrr_aooo_owwx_f000 (4-bit padding)
 t = 1 for RAW, 0 for custom
-w = 1 for no write
+w = 0 for no write
 a = 0 for op, 1 for immediate
 x = 1 for END
 r = imm, mdr, s, d

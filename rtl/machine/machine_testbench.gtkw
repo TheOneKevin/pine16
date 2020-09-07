@@ -1,12 +1,12 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Sat Sep 05 18:25:21 2020
+[*] Sun Sep 06 22:25:11 2020
 [*]
 [dumpfile] "c:\Users\Kevin\Desktop\Projects\FPGA\pine16\rtl\build\dump.vcd"
 [dumpfile_mtime] "Sat Sep 05 18:24:54 2020"
 [dumpfile_size] 20565
 [savefile] "C:\Users\Kevin\Desktop\Projects\FPGA\pine16\rtl\machine\machine_testbench.gtkw"
-[timestart] 497
+[timestart] 364
 [size] 1536 801
 [pos] -1 -1
 *-8.193395 1333 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
