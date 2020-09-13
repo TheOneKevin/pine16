@@ -44,6 +44,7 @@ module DECODER(
                         regsrc <= { inb0[3], inb1[7:5] };
                         regdst <= { inb0[2], inb1[4:2] };
                         aluop  <= { inb0[7:4] };
+                        opimm  <= { inb2, inb3 };
                     end
                     4'b1100: begin
                         // Mask 1111_1000 0000_0011

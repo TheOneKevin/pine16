@@ -129,7 +129,6 @@ int emit_instruction(char* op, arg_t* args, suffix_t* flags) {
     if(!strcasecmp(op, "RAW") && arglen(args) == 3) {
         word |= OP_RAW;
         if(flags->store_flags) word |= RAW_FLAGS;
-
         // Parse arguments
         foreach(ptr, args) switch(ptr->pos) {
         case 2: {

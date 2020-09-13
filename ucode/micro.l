@@ -21,7 +21,7 @@ FLAGEND >[ \t]*(END)?
 
 %%
 
-[\/\/.*]    { }
+#.*         { /* Comments */ }
 [ \r\t]*    { }
 [\n]+       { return TOKEN_NL; }
 <<EOF>>     { // Interpret EOF as new line

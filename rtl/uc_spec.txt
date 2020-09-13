@@ -1,11 +1,15 @@
 Microcode encoding:
-twrr_aooo_owwx_f000 (4-bit padding)
-t = 1 for RAW, 0 for custom
+1wrr_aooo_owwx_f??? (4-bit padding)
+t = 1 for RAW, 0 for custom (MSB)
 w = 0 for no write
 a = 0 for op, 1 for immediate
 x = 1 for END
 r = imm, mdr, s, d
 w = mar, mdr, s, d
+
+REQSYNCW
+0000_r???_???x_????
+r = r/w
 
 ==>> BANK 0, op = mask 1111_0000 0000_0000
 

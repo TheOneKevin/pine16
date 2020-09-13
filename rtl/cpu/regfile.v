@@ -2,12 +2,12 @@ module REGFILE(
     input clk,
     input reset,
     // Write
-    input we_p,
-    input [addr_width-1:0] wadr_n,
+    input we,
+    input [addr_width-1:0] wadr,
     input [data_width-1:0] din,
     // Read
-    input [addr_width-1:0] radr_p,
-    output reg [data_width-1:0] dout
+    input [addr_width-1:0] radr1,
+    output reg [data_width-1:0] dout1
 );
     parameter addr_width = 4;
     parameter data_width = 16;
@@ -18,15 +18,16 @@ module REGFILE(
     initial begin
         for(i = 0; i < (1<<addr_width); i++)
             regs[i] = 0;
-        regs[0] = 1;
+`ifdef SIMULATION
         $dumpvars(1, regs[0], regs[1]);
+`endif
     end
     
     always @(posedge clk) begin
-        if(we_p)
-            regs[wadr_n] = din;
+        if(we)
+            regs[wadr] = din;
     end
-    always @(negedge clk) begin
-        dout = regs[radr_p];
+    always @(posedge clk) begin
+        dout1 <= regs[radr1];
     end
 endmodule

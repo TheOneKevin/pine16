@@ -31,8 +31,8 @@ module IO_SYNC(
     reg st, ack;
     reg[15:0] latched_din;
     wire[15:0] data_write;
-    assign dtr0 = din;
-    assign dtr1 = din;
+    assign dtr0 = latched_din;
+    assign dtr1 = latched_din;
     assign data_write = st ? dtw1 : dtw0;
     assign ack0 = st ? 0 : ack;
     assign ack1 = st ? ack : 0;
@@ -41,6 +41,7 @@ module IO_SYNC(
     reg[2:0] state = 0;
     always @(posedge clk) begin case(state)
         default: begin
+            ack <= 0;
             { we, oe, pio } <= 3'b001;
             busy <= req0 || req1;
             isout <= req0 || req1;
@@ -66,6 +67,8 @@ module IO_SYNC(
         end
         3'b010: begin
             state <= 0;
+            ack <= 1;
+            latched_din <= din;
         end
         3'b101: begin
             { we, oe } <= 2'b11;
@@ -76,6 +79,8 @@ module IO_SYNC(
             { we, oe } <= 2'b00;
             isout <= 0;
             state <= 3'b000;
+            ack <= 1;
+            latched_din <= din;
         end
     endcase; end
 
@@ -85,18 +90,13 @@ module IO_SYNC(
             ale_neg <= 0;
             oe_neg <= 1;
         end
-        3'b010: begin 
-            ack <= 1;
-        end
         3'b101: begin
             ale_neg <= 0;
             oe_neg <= 1;
         end
-        3'b110: ack <= 1;
         3'b000: begin
             ale_neg <= 1;
             oe_neg <= 0;
-            ack <= 0;
         end
     endcase; end
 endmodule

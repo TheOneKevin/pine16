@@ -1,6 +1,10 @@
 `include "cpu/alu.v"
 `include "cpu/regfile.v"
 
+/* verilator lint_off PINMISSING */
+/* verilator lint_off CASEINCOMPLETE */
+/* verilator lint_off WIDTH */
+
 module EXECUTE(
     input wire clk,
 
@@ -17,7 +21,7 @@ module EXECUTE(
 
     // MEM Interface
     output  reg  rqm_n = 0,
-    output  reg  rwm_n = 0,
+    output  reg  rwm_n,
     input   wire akm_n,
     input   wire[15:0] drm_n,
     output  wire[15:0] dwm_n,
@@ -26,6 +30,7 @@ module EXECUTE(
     reg active = 0;
     reg[15:0] uop;
     reg[3:0] fsm1 = 0;
+    reg we = 0;
 
     always @(negedge clk) begin
         if(!akx_n) begin
@@ -33,12 +38,13 @@ module EXECUTE(
         end
         if(rqx_p && !active) begin
             active = 1;
-            akx_n = 1;
+            akx_n <= 1;
             rs <= regsrc;
             rd <= regdst;
             imm <= opimm;
             aop <= opout_p[11] ? opout_p[10:7] : aluop;
             uop <= opout_p;
+            we <= 0;
         end
         if(active) if(uop[15]) case(fsm1)
             4'b0000: begin
@@ -47,19 +53,38 @@ module EXECUTE(
             4'b0001: begin
                 fsm1 <= 4'b0000;
                 akx_n <= 0;
+                we <= uop[14];
                 if(uop[14]) case(uop[6:5])
                     2'b00: mar <= wbus;
                     2'b01: mdr <= wbus;
                 endcase
             end
+        endcase else case(uop[14:12])
+            3'b000: begin
+                akx_n <= 0;
+            end
+            3'b001: case(fsm1)
+                4'b0000: begin
+                    if(akm_n) begin
+                        rqm_n <= 0;
+                        fsm1 <= 0;
+                    end else begin
+                        rqm_n <= 1;
+                        rwm_n <= uop[11];
+                    end
+                end
+                4'b0001: begin
+                    
+                end
+            endcase
         endcase
     end
 
-    always @(posedge clk) if(active) if(uop[15]) case(fsm1)
+    /*always @(posedge clk) if(active) if(uop[15]) case(fsm1)
         4'b0001: begin
             
         end
-    endcase
+    endcase*/
 
     wire [15:0] rbus, wbus, rout;
     reg[15:0] mar = 0, mdr = 0, imm;
@@ -74,8 +99,12 @@ module EXECUTE(
     assign adm_n = mar;
     ALU alu0(.clk(clk), .a(rbus), .r(wbus), .op(aop));
     REGFILE regs(
-        .clk(clk), .we_p(uop[14] & uop[15] & active),
-        .wadr_n(wadr), .din(wbus),
-        .radr_p(radr), .dout(rout)
+        .clk(clk), .we(we),
+        .wadr(wadr), .din(wbus),
+        .radr1(radr), .dout1(rout)
     );
 endmodule
+
+/* verilator lint_on PINMISSING */
+/* verilator lint_on CASEINCOMPLETE */
+/* verilator lint_on WIDTH */

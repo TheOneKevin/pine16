@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Sun Sep 06 22:25:11 2020
+[*] Sat Sep 12 21:55:02 2020
 [*]
 [dumpfile] "c:\Users\Kevin\Desktop\Projects\FPGA\pine16\rtl\build\dump.vcd"
-[dumpfile_mtime] "Sat Sep 05 18:24:54 2020"
-[dumpfile_size] 20565
+[dumpfile_mtime] "Sat Sep 12 21:54:18 2020"
+[dumpfile_size] 23453
 [savefile] "C:\Users\Kevin\Desktop\Projects\FPGA\pine16\rtl\machine\machine_testbench.gtkw"
-[timestart] 364
+[timestart] 0
 [size] 1536 801
 [pos] -1 -1
-*-8.193395 1333 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-8.592194 1860 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.u0.
 [treeopen] tb.u0.decoder.
@@ -17,7 +17,7 @@
 [sst_width] 238
 [signals_width] 251
 [sst_expanded] 1
-[sst_vpaned_height] 473
+[sst_vpaned_height] 351
 @28
 tb.u0.CLK
 @200
@@ -39,9 +39,10 @@ tb.u0.prefetch.ignoreAck
 tb.u0.prefetch.dtr[15:0]
 tb.u0.prefetch.data_r[15:0]
 tb.u0.prefetch.cur[7:0]
-tb.u0.prefetch.wp[3:0]
+@23
 tb.u0.prefetch.rp[3:0]
-tb.u0.prefetch.fill[3:0]
+@22
+tb.u0.prefetch.wp[3:0]
 @28
 tb.u0.prefetch.u
 tb.u0.prefetch.t
@@ -63,16 +64,25 @@ tb.u0.decoder.opcode[7:0]
 @200
 -
 -Execute
+@28
+tb.u0.execute.clk
 @22
 tb.u0.execute.fsm1[3:0]
 @28
 tb.u0.execute.rqx_p
 tb.u0.execute.akx_n
+tb.u0.execute.active
+@22
+tb.u0.execute.opimm[15:0]
+tb.u0.execute.rbus[15:0]
+tb.u0.execute.wbus[15:0]
 @200
 -Regfile
 @28
-tb.u0.execute.regs.we_p
+tb.u0.execute.regs.we
 @22
+tb.u0.execute.radr[3:0]
+tb.u0.execute.wadr[3:0]
 tb.u0.execute.uop[15:0]
 tb.u0.execute.regs.\regs[0][15:0]
 tb.u0.execute.regs.\regs[1][15:0]
@@ -80,9 +90,10 @@ tb.u0.execute.regs.\regs[1][15:0]
 -ALU
 @22
 tb.u0.execute.alu0.a[15:0]
+@28
 tb.u0.execute.alu0.op[3:0]
+@22
 tb.u0.execute.alu0.r[15:0]
-@23
 tb.u0.execute.alu0.b[15:0]
 @200
 -

@@ -31,14 +31,14 @@ module PREFETCH(
     parameter BW=8;
     parameter LG=3;
 
-    // FIFO Logic (ZipCPU example)
+    // FIFO Logic (algorithm from ZipCPU)
     reg [(BW-1):0] fmm0[0:(1<<LG)-1];
     reg [(BW-1):0] fmm1[0:(1<<LG)-1];
     reg [(BW-1):0] fmm2[0:(1<<LG)-1];
     reg [(BW-1):0] fmm3[0:(1<<LG)-1];
     reg [LG:0] wp = 0, rp = 0, fill;
+    wire [LG:0] next_wp;
     reg full;
-
     always @(*)
         fill = wp - rp;
     always @(*)
@@ -51,13 +51,14 @@ module PREFETCH(
             fmm3[rp[LG-1:0]]
         };
     
+    // FIFO read request
     always @(negedge clk) begin
         aki_n <= rqi_p && fill > 1 && !sigflush;
-        if(rqi_p && fill > 1 && !sigflush) begin
-            rp <= rp + 1;
-        end else if(sigflush) begin
-            rp <= 0;
-        end
+    end
+
+    always @(posedge clk) begin
+        if(aki_n) rp <= rp + 1;
+        else if(flush) rp <= 0;
     end
 
     // Combinatorial Logic
@@ -76,7 +77,7 @@ module PREFETCH(
     assign u = cur[1];
     assign t = cur[0];
     integer i; // For reset
-    always @(negedge clk) begin if(flush) begin
+    always @(posedge clk) begin if(flush) begin
         wp <= 0;
         fsm1_next <= 0;
         for (i = 0; i < (1 << LG); i++) begin
@@ -87,25 +88,28 @@ module PREFETCH(
         end
     end else if(active) case(fsm1)
         2'b00: begin
-            wp = wp + 1'b1;
             fmm0[wp[LG-1:0]] <= cur; // Store sync'd to rp
             fmm1[wp[LG-1:0]] <= 0;   // Reset everything to 0
             fmm2[wp[LG-1:0]] <= 0;
             fmm3[wp[LG-1:0]] <= 0;
             fsm1_next <= { 1'b0, u || t };
+            if({1'b0,u||t} == 0) wp <= wp+1'b1;
         end
         2'b01: begin
             fmm1[wp[LG-1:0]] <= cur;
             szw <= t;   // test b
             fsm1_next <= { u, 1'b0 }; // v and !v
+            if({u,1'b0} == 0) wp <= wp+1'b1;
         end
         2'b10: begin
             fmm2[wp[LG-1:0]] <= cur;
             fsm1_next <= { szw, szw };
+            if({szw,szw} == 0) wp <= wp+1'b1;
         end
         2'b11: begin
             fmm3[wp[LG-1:0]] <= cur;
             fsm1_next <= 2'b00;
+            wp <= wp+1'b1;
         end
     endcase; end
 
@@ -116,7 +120,7 @@ module PREFETCH(
     // Memory interface fsm
     reg [1:0] fsm2;
     reg [1:0] fsm2_next;
-    always @(posedge clk) begin if(sigflush) begin
+    always @(negedge clk) begin if(sigflush) begin
         flush <= sigflush;      // Reset
         adr <= fadr[20:1];
         fsm2 <= 0;
@@ -129,13 +133,14 @@ module PREFETCH(
             ignoreAck <= 0;
         end
     end else case(fsm2)         // If not resetting...
+    default: begin end
     2'b00: begin                // Start first case
         active <= 0;
         data_r <= dtr;
         // Check if next hypothetical write will fill queue
         // We don't want the queue to fill mid-cycle
-        req <= fill < ((1 << LG)-2);
-        if(ack && !ignoreAck && fill < ((1 << LG)-2)) begin
+        req <= fill <= ((1 << LG)-2);
+        if(ack && !ignoreAck && fill <= ((1 << LG)-2)) begin
             fsm2 <= fsm2_next;
             adr  <= adr + 1;
         end else if(ack && ignoreAck) begin
