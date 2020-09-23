@@ -20,8 +20,8 @@ module PREFETCH(
     output  reg [19:0] adr,
 
     // XU Interface
-    input   wire rqi_p,
-    output  reg  aki_n,
+    input   wire rqi,
+    output  wire nxi,
     output  reg [31:0] instr,
 
     // Flush
@@ -51,13 +51,11 @@ module PREFETCH(
             fmm3[rp[LG-1:0]]
         };
     
+    assign nxi = fill > 1;
+    
     // FIFO read request
-    always @(negedge clk) begin
-        aki_n <= rqi_p && fill > 1 && !sigflush;
-    end
-
     always @(posedge clk) begin
-        if(aki_n) rp <= rp + 1;
+        if(rqi && nxi && !flush) rp <= rp + 1;
         else if(flush) rp <= 0;
     end
 
@@ -97,7 +95,7 @@ module PREFETCH(
         end
         2'b01: begin
             fmm1[wp[LG-1:0]] <= cur;
-            szw <= t;   // test b
+            szw <= t; // test b
             fsm1_next <= { u, 1'b0 }; // v and !v
             if({u,1'b0} == 0) wp <= wp+1'b1;
         end

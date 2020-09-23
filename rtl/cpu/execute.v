@@ -9,9 +9,9 @@ module EXECUTE(
     input wire clk,
 
     // Decoder Interface
-    input   wire rqx_p,
-    output  reg  akx_n = 0,
-    input   wire[15:0] opout_p,
+    input   wire rqx,
+    output  reg  byx = 0,
+    input   wire[15:0] opout,
     input   wire[3:0] regsrc, regdst, aluop,
     input   wire[15:0] opimm,
 
@@ -25,34 +25,67 @@ module EXECUTE(
     input   wire akm_n,
     input   wire[15:0] drm_n,
     output  wire[15:0] dwm_n,
-    output  wire[19:0] adm_n
+    output  wire[19:0] adm_n,
+    
+    output wire led
 );
-    reg active = 0;
     reg[15:0] uop;
-    reg[3:0] fsm1 = 0;
-    reg we = 0;
+    reg[1:0] fsm1 = 0;
+    //assign led = byx;
 
-    always @(negedge clk) begin
-        if(!akx_n) begin
-            active = 0;
-        end
-        if(rqx_p && !active) begin
-            active = 1;
-            akx_n <= 1;
+    always @(negedge clk) case(fsm1)
+        2'b00: if(rqx) begin
+            byx <= 1;
+            fsm1 <= 2'b01;
+            // Latch inputs
             rs <= regsrc;
             rd <= regdst;
             imm <= opimm;
-            aop <= opout_p[11] ? opout_p[10:7] : aluop;
-            uop <= opout_p;
+            aop <= opout[11] ? opout[10:7] : aluop;
+            uop <= opout;
+            we <= 0;
+            if(uop[15]) begin
+            end else case(uop[14:12])
+                default: begin end
+            endcase
+        end else begin
             we <= 0;
         end
-        if(active) if(uop[15]) case(fsm1)
-            4'b0000: begin
-                fsm1 <= 4'b0001;
+        2'b01: begin
+            if(uop[15]) begin
+                fsm1 <= 2'b00;
+                byx <= 0;
+                we <= uop[14];
+                if(uop[14]) case(uop[6:5])
+                    2'b00: mar <= wbus;
+                    2'b01: mdr <= wbus;
+                endcase
+            end else case(uop[14:12])
+                default: begin end
+            endcase
+        end
+    endcase
+
+    /*always @(negedge clk) begin
+        if(rqx && !active) begin
+            active <= 1;
+            // Latch inputs
+            rs <= regsrc;
+            rd <= regdst;
+            imm <= opimm;
+            aop <= opout[11] ? opout[10:7] : aluop;
+            uop <= opout;
+            we <= 0;
+        end
+        if(rqx || active) if(uop[15]) case(fsm1)
+            2'b00: begin
+                byx <= 1;
+                fsm1 <= 2'b01; // Allow read to happen
             end
-            4'b0001: begin
-                fsm1 <= 4'b0000;
-                akx_n <= 0;
+            2'b01: begin // Set up for write
+                fsm1 <= 0;
+                byx <= 0;
+                active <= 0;
                 we <= uop[14];
                 if(uop[14]) case(uop[6:5])
                     2'b00: mar <= wbus;
@@ -61,10 +94,11 @@ module EXECUTE(
             end
         endcase else case(uop[14:12])
             3'b000: begin
-                akx_n <= 0;
+                //byx <= 0;
+                //active <= 0;
             end
             3'b001: case(fsm1)
-                4'b0000: begin
+                2'b00: begin
                     if(akm_n) begin
                         rqm_n <= 0;
                         fsm1 <= 0;
@@ -73,24 +107,18 @@ module EXECUTE(
                         rwm_n <= uop[11];
                     end
                 end
-                4'b0001: begin
+                2'b01: begin
                     
                 end
             endcase
         endcase
-    end
+    end*/
 
-    /*always @(posedge clk) if(active) if(uop[15]) case(fsm1)
-        4'b0001: begin
-            
-        end
-    endcase*/
-
+    reg we = 0;
     wire [15:0] rbus, wbus, rout;
     reg[15:0] mar = 0, mdr = 0, imm;
     reg[3:0] rs, rd, aop;
     wire[3:0] wadr, radr;
-    
     assign wadr = uop[6:5] == 2'b11 ? rd : rs;
     assign radr = uop[13:12] == 2'b11 ? rd : rs;
     assign rbus = uop[13:12] == 2'b00 ? imm :
@@ -101,7 +129,7 @@ module EXECUTE(
     REGFILE regs(
         .clk(clk), .we(we),
         .wadr(wadr), .din(wbus),
-        .radr1(radr), .dout1(rout)
+        .radr1(radr), .dout1(rout), .led(led)
     );
 endmodule
 

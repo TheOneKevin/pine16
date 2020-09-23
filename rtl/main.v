@@ -23,6 +23,11 @@ module CPU (
     // UART
     input PIN_25, output PIN_26
 );
+`ifdef SIMULATION
+    wire CLKK;
+    assign CLKK = CLK;
+`endif
+
     // Disable the USB
     assign USBPU = 0;
     
@@ -65,7 +70,7 @@ module CPU (
 
     // I/O Pin Arbitrator
     IO_SYNC mem(
-        .clk(CLK),
+        .clk(CLKK),
         // Instruction Queue
         .req0(rqm_pq), .ack0(akm_pq), .rw0(1'b0),
         .adr0(adm_pq), .dtr0(drm_pq), .dtw0(16'b0),
@@ -80,36 +85,40 @@ module CPU (
     );
 
     PREFETCH prefetch(
-        .clk(CLK),
+        .clk(CLKK),
         // Memory
         .req(rqm_pq), .ack(akm_pq), .dtr(drm_pq), .adr(adm_pq),
         // Decoder Interface
-        .rqi_p(rqi_dc), .aki_n(aki_dc), .instr(instr_dc),
+        .rqi(rqi_dc), .nxi(aki_dc), .instr(instr_dc),
         // Flush/Reset
         .sigflush(reset), .fadr(21'b0)
     );
 
     DECODER decoder(
-        .clk(CLK),
+        .clk(CLKK),
         // PQ Interface
-        .rqi_p(rqi_dc), .aki_n(aki_dc), .cmd(instr_dc),
+        .rqi(rqi_dc), .nxi(aki_dc), .cmd(instr_dc),
         // XU Interface
-        .akx_n(akx_dc), .rqx_p(rqx_dc), .opout_p(uop_dc),
+        .byx(akx_dc), .rqx(rqx_dc), .opout(uop_dc),
         .regsrc(regsrc), .regdst(regdst), .aluop(aluop),
         .opimm(opimm)
     );
 
     EXECUTE execute(
-        .clk(CLK),
+        .clk(CLKK),
         // XU Interface
-        .akx_n(akx_dc), .rqx_p(rqx_dc), .opout_p(uop_dc),
+        .byx(akx_dc), .rqx(rqx_dc), .opout(uop_dc),
         .regsrc(regsrc), .regdst(regdst), .aluop(aluop),
         .opimm(opimm),
         // Memory
         .rqm_n(rqm_xu), .rwm_n(rwm_xu),
         .akm_n(akm_xu), .drm_n(drm_xu),
-        .dwm_n(dwm_xu), .adm_n(adm_xu)
+        .dwm_n(dwm_xu), .adm_n(adm_xu),
+        
+        .led(LED)
     );
+
+    assign PIN_26 = CLKK;
 
     // UART communication
     /*assign LED = !PIN_25;
@@ -119,22 +128,35 @@ module CPU (
 	wire[7:0] rx_data;
     reg [7:0] tx_buf = 0;
 	uart_tx uart_tx1(
-        .clk(CLK),
+        .clk(CLKK),
 		.new_data(txn),
 		.char(tx_buf),
 		.rdy(rdy),		
 		.out_bit(PIN_26)
 	);
 	uart_rx uart_rx1(
-        .clk(CLK),
+        .clk(CLKK),
 		.data_in(PIN_25),
 		.data_out(rx_data),
 		.new_data(rxn)
 	);*/
 
+`ifndef SIMULATION
+    reg[22:0] ctr = 0;
+    reg CLKK = 0;
+    always @(posedge CLK) begin
+        if(ctr < 23'h400000) begin
+            ctr <= ctr + 1;
+        end else begin
+            ctr <= 0;
+            CLKK <= ~CLKK;
+        end
+    end
+`endif
+
     // FSM
     reg[3:0] state = 0;
-    always @(posedge CLK) case(state)
+    always @(posedge CLKK) case(state)
         4'b0000: begin
             reset <= 1;
             state <= 4'b0001;
@@ -144,9 +166,8 @@ module CPU (
             reset <= 0;
             state <= 4'b0011;
         end
+        default: begin
+            
+        end
     endcase
-
-    always @(negedge CLK) begin
-        
-    end
 endmodule

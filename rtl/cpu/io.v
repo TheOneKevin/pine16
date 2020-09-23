@@ -17,7 +17,7 @@ module IO_SYNC(
     
     // Module Signals
     input   wire clk,
-    output  reg  busy,
+    //output  reg  busy,
 
     // External IO
     input  [15:0] din,
@@ -43,7 +43,7 @@ module IO_SYNC(
         default: begin
             ack <= 0;
             { we, oe, pio } <= 3'b001;
-            busy <= req0 || req1;
+            //busy <= req0 || req1;
             isout <= req0 || req1;
             // Execute 1 cycle, although messy it saves us 1 clock
             // Choose which module should get priority
